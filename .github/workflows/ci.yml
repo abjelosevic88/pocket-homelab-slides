@@ -23,14 +23,14 @@ jobs:
         run: CGO_ENABLED=0 go build -trimpath -ldflags "-s -w" -o pocket-slides ./cmd/pocket-slides
       - name: Smoke test
         run: |
-          DATA_DIR=/tmp/pcsl DEMO_DATA=true AUTH_MODE=none ./pocket-slides &
+          DATA_DIR=/tmp/psld DEMO_DATA=true AUTH_MODE=none ./pocket-slides &
           sleep 3
           curl -fsS http://localhost:8080/healthz
           curl -fsS http://localhost:8080/api/v1/summary | grep -q '"upcoming"'
           curl -fsS http://localhost:8080/api/v1/decks | grep -q 'Running a home server'
-          curl -fsS 'http://localhost:8080/api/v1/search?q=Portugal' | grep -q '"results"'
-          curl -fsS http://localhost:8080/api/v1/predictions | grep -q '"right_pct"'
-          curl -fsS http://localhost:8080/api/v1/templates | grep -q 'Letter to future me'
+          curl -fsS 'http://localhost:8080/api/v1/search?q=backup' | grep -q 'Running a home server'
+          curl -fsS http://localhost:8080/api/v1/shows | grep -q '"rehearsal"'
+          curl -fsS http://localhost:8080/api/v1/builtins | grep -q 'Live poll'
           curl -fsS http://localhost:8080/ | grep -q '<div id="root">'
   docker:
     runs-on: ubuntu-latest
