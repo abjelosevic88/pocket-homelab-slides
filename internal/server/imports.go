@@ -4,6 +4,8 @@ import (
 	"archive/zip"
 	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
@@ -14,6 +16,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/abjelosevic88/pocket-homelab-slides/internal/store"
 )
@@ -556,7 +559,7 @@ func (s *Server) addDrafts(ctx context.Context, u *store.User, d *store.Deck, dr
 func (s *Server) handleImportDeck(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	u := userFrom(ctx)
-	var title string
+	var title, ref string
 	var drafts []draftSlide
 	if strings.HasPrefix(r.Header.Get("Content-Type"), "multipart/") {
 		r.Body = http.MaxBytesReader(w, r.Body, 100<<20)
@@ -581,6 +584,13 @@ func (s *Server) handleImportDeck(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		title = firstNonEmpty(r.FormValue("title"), title)
+		sum := sha256.Sum256(data)
+		ref = "file:" + hex.EncodeToString(sum[:12])
+		if have, err := s.store.DeckBySource(ctx, u.ID, sourceOf(ctx), ref); err == nil {
+			// the same file again: the deck it made is still here
+			writeJSON(w, http.StatusOK, map[string]any{"deck": have, "slides": 0, "skipped": 1, "text": "that file is here already"})
+			return
+		}
 	} else {
 		var in struct {
 			Title string `json:"title"`
@@ -597,12 +607,12 @@ func (s *Server) handleImportDeck(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusBadRequest, "there are no slides in that")
 		return
 	}
-	d, err := s.makeDeck(ctx, u, title, drafts, "", "")
+	d, err := s.makeDeck(ctx, u, title, drafts, "", ref)
 	if err != nil {
 		s.fail(w, err, "import")
 		return
 	}
-	writeJSON(w, http.StatusCreated, map[string]any{"deck": d, "slides": d.Slides, "text": fmt.Sprintf("%d %s brought in", d.Slides, plural(d.Slides, "slide", "slides"))})
+	writeJSON(w, http.StatusCreated, map[string]any{"deck": d, "slides": d.Slides, "created": 1, "text": fmt.Sprintf("%d %s brought in", d.Slides, plural(d.Slides, "slide", "slides"))})
 }
 
 func (s *Server) draftsFromFile(name string, data []byte) (string, []draftSlide, error) {
@@ -619,6 +629,15 @@ func (s *Server) draftsFromFile(name string, data []byte) (string, []draftSlide,
 		return firstNonEmpty(t, strings.TrimSuffix(path.Base(name), path.Ext(name))), d, nil
 	case ".ppt", ".key", ".odp":
 		return "", nil, &userErr{"save it as PowerPoint (.pptx) first, then bring that in"}
+	case "":
+		// no extension (a file handed over by Pocket Move): a zip is a
+		// PowerPoint file, text is Markdown
+		if bytes.HasPrefix(data, []byte("PK\x03\x04")) {
+			return s.draftsFromFile(name+".pptx", data)
+		}
+		if utf8.Valid(data) {
+			return s.draftsFromFile(name+".md", data)
+		}
 	}
 	return "", nil, &userErr{"PowerPoint (.pptx) or Markdown (.md) files only"}
 }

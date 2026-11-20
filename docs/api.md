@@ -26,7 +26,7 @@ Times are ISO 8601 UTC; a talk's `talk_at` is local `YYYY-MM-DDTHH:MM`.
 | `GET /builtins` | The built-in layouts (with the fields each uses), themes and templates |
 | `POST /uploads` | multipart `file` (JPEG/PNG/WebP/GIF, 25 MB), `deck`, optional `thumb`, `width`, `height` |
 | `GET /uploads/ID` | A picture (`?thumb=1` small) |
-| `POST /import/deck` | `{text, title}` (Markdown) or multipart `file` (.pptx, .md) → a new deck |
+| `POST /import/deck` | `{text, title}` (Markdown) or multipart `file` (.pptx, .md) → a new deck (the same file twice makes one deck) |
 
 Layouts: `title, section, bullets, two, image_right, image_left, image, quote, number, chart, table, code, poll, agenda, end, blank`. `data` holds `build` (points one at a time), `fit`, `lang`, `chart {kind: bar|hbar|line|pie|donut, labels, values, unit}`, `rows` (table, first row the headings), `options` and `correct` (poll / quiz), `qr` (end: share|live|none), `left`/`right` (column headings).
 
@@ -70,3 +70,5 @@ Slide text is short Markdown: `- ` points, `1. ` numbers, two spaces in front fo
 Through Pocket Core app links (each switched on per person), Slides reaches Notes (`notes:read`, `notes:write`), Photos (`photos:read`), Files (`files:read`, `files:write`), Calendar (`calendar:read`, `calendar:write`), Tasks (`tasks:write`), Chat (`chat:read`, `chat:write`), Email (`mail:send`), Contacts (`contacts:read`), Voice (`voice:read`), Tables (`tables:read`), Translate (`translate:run`), Blog (`blog:write`), Learn (`learn:write`) and Alerts (`alerts:write`); and Pocket AI for drafting and speaker notes.
 
 Slides offers `slides:read` (decks, slides, notes, shows, summary, day, search) and `slides:write` (make a deck with slides, add slides; an app changes only what it made). It publishes `slides.deck_created`, `slides.presented`, `slides.rehearsed` and `slides.shared`.
+
+Pocket Move can copy your decks, themes, layouts and talks out and bring decks in: `GET /pocket/portable` describes them for `move:export` / `move:import` links (`/export.json`, `/export.csv` out; `/import` and `/import/deck` in, adding only what is not here yet).

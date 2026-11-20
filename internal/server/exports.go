@@ -239,6 +239,11 @@ func (s *Server) importDoc(ctx context.Context, u *store.User, doc *exportDoc) (
 			skipped++
 			continue
 		}
+		if have, err := s.store.GetDeck(ctx, u.ID, ed.Deck.ID); err == nil && have.CreatedAt == ed.Deck.CreatedAt {
+			// the person's own deck: their file back on the same box
+			skipped++
+			continue
+		}
 		d := ed.Deck
 		oldDeck := d.ID
 		d.ID, d.UserID, d.ShareKey, d.LiveKey, d.Shared, d.Source, d.SourceRef = 0, u.ID, "", "", false, "import", ref

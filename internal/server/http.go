@@ -67,6 +67,7 @@ func (s *Server) Router() http.Handler {
 			r.Post("/import", s.handleImport)
 			r.Post("/import/deck", s.handleImportDeck)
 			r.Get("/export.json", s.handleExportJSON)
+			r.Get(strings.TrimPrefix(core.PortablePath, "/api/v1"), portable.Handler())
 			r.Post("/ai/draft", s.handleAIDraft)
 			r.Post("/ai/slide", s.handleAISlide)
 			r.Post("/decks/{id}/ai/notes", s.handleAINotes)

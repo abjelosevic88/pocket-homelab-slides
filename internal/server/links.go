@@ -21,6 +21,20 @@ var linkOffers = []core.Offer{
 	{Scope: "slides:write", Name: "Make presentations for you", Description: "Start a deck with slides (from a note, a memo or when you ask Pocket AI) and add slides to your decks. Changes or removes only what that app made itself; never presents, shares or deletes your own decks."},
 }
 
+// portable is what Pocket Move may copy out and bring in for a person
+// (docs/move.md in pocket-homelab-core); Register adds move:export/import.
+var portable = &core.Portable{
+	Exports: []core.PortableExport{
+		{Path: "/api/v1/export.json", File: "slides.json", Kind: core.KindPocket, Title: "Every deck with its slides, notes and pictures, your themes and layouts, and your talks and rehearsals"},
+		{Path: "/api/v1/export.csv", File: "talks.csv", Kind: core.KindCSV, Title: "Your talks and rehearsals as a table"},
+	},
+	Imports: []core.PortableImport{
+		{Path: "/api/v1/import", Kind: core.KindPocket, ContentType: "application/json", MaxBytes: 1 << 30, Title: "Adds the decks, themes and layouts from another box; decks already here are skipped"},
+		{Path: "/api/v1/import/deck", Kind: core.KindMarkdown, Form: "file", MaxBytes: 100 << 20, Title: "Makes a deck from a Markdown file (a slide per heading or per ---); the same file twice makes one deck"},
+		{Path: "/api/v1/import/deck", Kind: "pptx", Form: "file", MaxBytes: 100 << 20, Title: "Makes a deck from a PowerPoint file (.pptx, also saved by Keynote and Google Slides): words, speaker notes and pictures; the same file twice makes one deck"},
+	},
+}
+
 // linkRoute is one request a Pocket Core link token may make.
 type linkRoute struct {
 	methods string
@@ -44,6 +58,9 @@ var errLinkScope = errors.New("outside the link's scope")
 
 // linkAllows reports whether a link token with these scopes may make this request.
 func linkAllows(scopes []string, r *http.Request) bool {
+	if portable.LinkAllows(scopes, r) {
+		return true
+	}
 	for _, lr := range linkRoutes {
 		if !strings.Contains(" "+lr.methods+" ", " "+r.Method+" ") || !lr.path.MatchString(r.URL.Path) {
 			continue
