@@ -35,6 +35,16 @@ var portable = &core.Portable{
 	},
 }
 
+// capabilities are what Pocket Search, Day and Hub may ask Slides
+// (docs/capabilities.md in pocket-homelab-core): one route each, in the
+// shape every Pocket app answers in (capabilities.go). Register adds the
+// pocket:* offers. No quick capture: a deck needs slides.
+var capabilities = core.Capabilities{
+	Search: &core.Searchable{What: "Your decks, by title, talk and the words on the slides", Kinds: []string{"deck"}, Bangs: []string{"slides", "deck", "talk"}},
+	Day:    &core.DayFeed{Label: "Slides", One: "talk", Many: "talks", What: "The talks you gave or had planned that day, the rehearsals with how long they took, and the decks you made"},
+	Widget: &core.Widget{Title: "Next talk", What: "How long until your next talk and how the rehearsals went, then the decks you changed last"},
+}
+
 // linkRoute is one request a Pocket Core link token may make.
 type linkRoute struct {
 	methods string
@@ -58,7 +68,7 @@ var errLinkScope = errors.New("outside the link's scope")
 
 // linkAllows reports whether a link token with these scopes may make this request.
 func linkAllows(scopes []string, r *http.Request) bool {
-	if portable.LinkAllows(scopes, r) {
+	if portable.LinkAllows(scopes, r) || capabilities.LinkAllows(scopes, r) {
 		return true
 	}
 	for _, lr := range linkRoutes {

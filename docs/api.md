@@ -64,11 +64,14 @@ Slide text is short Markdown: `- ` points, `1. ` numbers, two spaces in front fo
 | `GET /summary` | Counts and the next talk (Pocket Day, AI, Homepage) |
 | `GET /day/YYYY-MM-DD` | Talks given and rehearsed that day, and a talk planned on it |
 | `GET /search?q=` | Decks by the words on their slides and in their notes |
+| `GET /pocket/search?q=&limit=` | Pocket Search: decks by title, talk (its title and place) and the words on the slides, with the number of slides and when and where the talk is (`pocket:search`) |
+| `GET /pocket/day/YYYY-MM-DD[?tz=]` | Pocket Day: talks given or planned that day, rehearsals with how long they took, decks made (`pocket:day`) |
+| `GET /pocket/widget` | Pocket Hub: how long until the next talk, its rehearsals against the planned time, then the decks changed last (`pocket:widget`) |
 
 ## Other Pocket apps
 
 Through Pocket Core app links (each switched on per person), Slides reaches Notes (`notes:read`, `notes:write`), Photos (`photos:read`), Files (`files:read`, `files:write`), Calendar (`calendar:read`, `calendar:write`), Tasks (`tasks:write`), Chat (`chat:read`, `chat:write`), Email (`mail:send`), Contacts (`contacts:read`), Voice (`voice:read`), Tables (`tables:read`), Translate (`translate:run`), Blog (`blog:write`), Learn (`learn:write`) and Alerts (`alerts:write`); and Pocket AI for drafting and speaker notes.
 
-Slides offers `slides:read` (decks, slides, notes, shows, summary, day, search) and `slides:write` (make a deck with slides, add slides; an app changes only what it made). It publishes `slides.deck_created`, `slides.presented`, `slides.rehearsed` and `slides.shared`.
+Slides offers `slides:read` (decks, slides, notes, shows, summary, day, search) and `slides:write` (make a deck with slides, add slides; an app changes only what it made). For Pocket Search, Day and Hub it also offers `pocket:search`, `pocket:day` and `pocket:widget`, each opening only its one route above. It publishes `slides.deck_created`, `slides.presented`, `slides.rehearsed` and `slides.shared`.
 
 Pocket Move can copy your decks, themes, layouts and talks out and bring decks in: `GET /pocket/portable` describes them for `move:export` / `move:import` links (`/export.json`, `/export.csv` out; `/import` and `/import/deck` in, adding only what is not here yet).

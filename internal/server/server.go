@@ -229,10 +229,12 @@ func (s *Server) registerWithCore(ctx context.Context) error {
 		Description: "Presentations: build a deck from reusable slide layouts (title, points, two columns, pictures, quote, big number, chart, table, code, live poll, agenda, the end) with your own themes and saved layouts, speaker notes on every slide, and present it with a presenter screen on your phone — the slide on the screen, the next one, your notes, a timer — scanned from a code on the screen. The audience can follow on their phones with a short code, answer polls, ask questions and say how it was. Rehearse with a timer per slide, share a read-only link, print to PDF or save a web page. Bring decks in from PowerPoint or Markdown. Links to Pocket Notes, Photos, Files, Calendar, Tasks, Chat, Email, Contacts, Voice, Tables, Translate, Blog, Learn and Alerts; Pocket AI drafts a deck, writes speaker notes and says what to fix before the talk.",
 		Icon:        "/favicon.svg", Version: Version,
 		URL: s.cfg.CoreAppURL, PublicURL: s.cfg.BaseURL, HealthPath: "/healthz", EnvPrefix: "SLIDES",
-		Publishes: eventTopics,
-		Offers:    linkOffers,
-		Portable:  portable,
-		Uses:      append(linkUses(), core.InferenceUse()),
+		Category:     "Work",
+		Publishes:    eventTopics,
+		Offers:       linkOffers,
+		Portable:     portable,
+		Capabilities: capabilities,
+		Uses:         append(linkUses(), core.InferenceUse()),
 	}
 	if s.cfg.BaseURL != "" {
 		m.OIDC = &core.OIDCRequest{RedirectURIs: []string{s.oidcCallbackURL()}}

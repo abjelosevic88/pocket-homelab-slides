@@ -100,6 +100,9 @@ func (s *Server) Router() http.Handler {
 				r.Get("/summary", s.handleSummary)
 				r.Get("/day/{date}", s.handleDay)
 				r.Get("/search", s.handleSearch)
+				r.Get("/pocket/search", core.SearchHandler(s.pocketSearch))
+				r.Get("/pocket/day/{date}", core.DayHandler(s.pocketDay))
+				r.Get("/pocket/widget", core.WidgetHandler(s.pocketWidget))
 				r.Get("/builtins", s.handleBuiltins)
 				r.Get("/uploads/{id}", s.handleGetUpload)
 

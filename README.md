@@ -74,6 +74,8 @@ Set `CORE_URL` and `CORE_REGISTRATION_KEY` and Slides joins the box: people sign
 | Pocket Learn | a lesson's slides and quiz questions as flashcards | `learn:write` |
 | Pocket Alerts | the day before a talk; the questions you did not get to | `alerts:write` |
 
+Pocket Search finds your decks (`!slides`, `!deck`, `!talk`) by their title, their talk and the words on the slides; Pocket Day writes down the talks you gave or had planned, the rehearsals with how long they took and the decks you made; Pocket Hub shows how long until your next talk, how the rehearsals went against the planned time, and the decks you changed last. Slides is on the Work shelf, and nothing needs to be added to those apps for it.
+
 Other apps use your decks through `slides:read` (decks, slides, notes, talks and rehearsals — Pocket Day, Search, AI) and `slides:write` (make a deck with slides, add slides — Pocket AI; an app changes only what it made, and never presents, shares or deletes). Events for Pocket Flows: `slides.deck_created`, `slides.presented`, `slides.rehearsed`, `slides.shared`.
 
 ## Develop

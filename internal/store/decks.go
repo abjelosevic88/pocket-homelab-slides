@@ -210,6 +210,43 @@ func (s *Store) SearchDecks(ctx context.Context, uid int64, q string, limit int)
 	return out, hits, nil
 }
 
+// SearchTalks finds a person's decks by the title or the place of their talk
+// (Pocket Search; the deck search above looks at the deck and its slides).
+func (s *Store) SearchTalks(ctx context.Context, uid int64, q string, limit int) ([]Deck, error) {
+	like := "%" + strings.ToLower(strings.TrimSpace(q)) + "%"
+	return s.deckList(ctx, `SELECT `+deckCols+deckStats+` FROM decks d WHERE d.user_id = ? AND (lower(d.talk_title) LIKE ? OR lower(d.talk_place) LIKE ?)
+		ORDER BY d.archived, d.updated_at DESC LIMIT ?`, uid, like, like, limit)
+}
+
+// RecentDecks lists a person's decks changed last, archived ones left out.
+func (s *Store) RecentDecks(ctx context.Context, uid int64, limit int) ([]Deck, error) {
+	return s.deckList(ctx, `SELECT `+deckCols+deckStats+` FROM decks d WHERE d.user_id = ? AND d.archived = 0
+		ORDER BY d.updated_at DESC, d.id DESC LIMIT ?`, uid, limit)
+}
+
+// DecksCreatedBetween lists a person's decks made in [from, to) (UTC ISO).
+func (s *Store) DecksCreatedBetween(ctx context.Context, uid int64, from, to string) ([]Deck, error) {
+	return s.deckList(ctx, `SELECT `+deckCols+deckStats+` FROM decks d WHERE d.user_id = ? AND d.created_at >= ? AND d.created_at < ?
+		ORDER BY d.created_at`, uid, from, to)
+}
+
+func (s *Store) deckList(ctx context.Context, q string, args ...any) ([]Deck, error) {
+	rows, err := s.DB.QueryContext(ctx, q, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := []Deck{}
+	for rows.Next() {
+		d, err := scanDeck(rows, true)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, *d)
+	}
+	return out, rows.Err()
+}
+
 // ---- themes ----
 
 const themeCols = `id, user_id, name, base, bg, bg2, fg, muted, accent, head_font, body_font, logo_id, created_at, updated_at`
